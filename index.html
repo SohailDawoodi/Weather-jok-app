@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>وضعیت هوا؟</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --text: #2b2d42;
+            --background: #f8f9fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text);
+            overflow: hidden;
+            position: relative;
+        }
+        .weather-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgb(237, 235, 235);
+            border-radius: 80%;
+            opacity: 0.8;
+            animation: moveCloud linear infinite;
+        }
+
+        @keyframes moveCloud {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100vw);
+            }
+        }
+
+        .rain {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .drop {
+            position: absolute;
+            width: 2px;
+            height: 15px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.6));
+            border-radius: 0 0 5px 5px;
+            animation: rain linear infinite;
+        }
+
+        @keyframes rain {
+            0% {
+                transform: translateY(-100vh) translateX(0);
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(100vh) translateX(20px);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            z-index: 10;
+            transition: all 0.5s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 2rem;
+            font-weight: 700;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            font-size: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+            font-family: 'Vazirmatn', sans-serif;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.2);
+            background-color: white;
+        }
+
+        input::placeholder {
+            color: #adb5bd;
+        }
+
+        .error-message {
+            color: #e63946;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            text-align: right;
+            display: none;
+        }
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-family: 'Vazirmatn', sans-serif;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+        .result-container {
+            display: none;
+            animation: fadeIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            text-align: center;
+            position: relative;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sticker {
+            font-size: 5rem;
+            margin: 1rem 0;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-20px);
+            }
+        }
+
+        .message-box {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid var(--accent);
+            position: relative;
+        }
+
+        .message-title {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .message-text {
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #adb5bd;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: var(--primary);
+        }
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translateX(-5px);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translateX(5px);
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .visible {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="weather-bg" id="weatherBg"></div>
+
+    <div class="container">
+        <div class="form-container" id="formContainer">
+            <h1>وضعیت هوای امروز</h1>
+
+            <div class="form-group">
+                <div class="input-wrapper">
+                    <input type="text" id="cityInput" placeholder="نام شهر خود را وارد کنید...">
+                </div>
+                <p class="error-message" id="errorMessage">لطفاً نام شهر را وارد کنید</p>
+
+                <button class="btn" id="showWeatherBtn">نمایش وضعیت هوا</button>
+            </div>
+        </div>
+        <div class="result-container" id="resultContainer">
+            <div class="sticker">😂</div>
+
+            <div class="message-box">
+                <button class="close-btn" id="closeBtn">✕</button>
+                <h2 class="message-title">برو بیرون خودت ببین!</h2>
+                <p class="message-text"> خودت برو بیرون هوا را چک کن ! </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class WeatherApp {
+            constructor() {
+                this.formContainer = document.getElementById('formContainer');
+                this.resultContainer = document.getElementById('resultContainer');
+                this.cityInput = document.getElementById('cityInput');
+                this.showWeatherBtn = document.getElementById('showWeatherBtn');
+                this.errorMessage = document.getElementById('errorMessage');
+                this.weatherBg = document.getElementById('weatherBg');
+                this.closeBtn = document.getElementById('closeBtn');
+
+                this.initEvents();
+                this.createBackground();
+            }
+
+            initEvents() {
+                this.showWeatherBtn.addEventListener('click', () => this.handleShowWeather());
+                this.closeBtn.addEventListener('click', () => this.backToForm());
+                this.resultContainer.addEventListener('click', (e) => {
+                    if (e.target === this.resultContainer) {
+                        this.backToForm();
+                    }
+                });
+            }
+
+            handleShowWeather() {
+                try {
+                    if (this.cityInput.value.trim() === '') {
+                        this.showError();
+                    } else {
+                        this.showResult();
+                    }
+                } catch (error) {
+                    console.error('خطا در نمایش وضعیت هوا:', error);
+                    this.showError();
+                }
+            }
+
+            showError() {
+                this.cityInput.classList.add('shake');
+                this.errorMessage.style.display = 'block';
+
+                setTimeout(() => {
+                    this.cityInput.classList.remove('shake');
+                }, 500);
+            }
+
+            showResult() {
+                this.formContainer.classList.add('hidden');
+                this.resultContainer.classList.add('visible');
+            }
+
+            backToForm() {
+                this.resultContainer.classList.remove('visible');
+                this.formContainer.classList.remove('hidden');
+                this.cityInput.value = '';
+                this.errorMessage.style.display = 'none';
+            }
+
+            createBackground() {
+                try {
+                    for (let i = 0; i < 5; i++) {
+                        const cloud = document.createElement('div');
+                        cloud.classList.add('cloud');
+
+                        const size = Math.random() * 100 + 100;
+                        cloud.style.width = `${size}px`;
+                        cloud.style.height = `${size * 0.6}px`;
+
+                        cloud.style.top = `${Math.random() * 50}%`;
+                        cloud.style.left = `${Math.random() * 100}%`;
+
+                        const duration = Math.random() * 60 + 60;
+                        cloud.style.animationDuration = `${duration}s`;
+
+                        this.weatherBg.appendChild(cloud);
+                    }
+                    const rainContainer = document.createElement('div');
+                    rainContainer.classList.add('rain');
+
+                    for (let i = 0; i < 80; i++) {
+                        const drop = document.createElement('div');
+                        drop.classList.add('drop');
+
+                        drop.style.left = `${Math.random() * 100}%`;
+
+                        const delay = Math.random() * 5;
+                        const duration = Math.random() * 0.5 + 0.5;
+                        drop.style.animationDelay = `${delay}s`;
+                        drop.style.animationDuration = `${duration}s`;
+
+                        rainContainer.appendChild(drop);
+                    }
+
+                    this.weatherBg.appendChild(rainContainer);
+                } catch (error) {
+                    console.error('خطا در ایجاد انیمیشن پس‌زمینه:', error);
+                }
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            new WeatherApp();
+        });
+    </script>
+</body>
+
+</html>
